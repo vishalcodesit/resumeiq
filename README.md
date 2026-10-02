@@ -1,6 +1,6 @@
 # ResumeIQ — AI Resume Feedback & ATS Scanner
 
-A full-stack Next.js 14 application that analyzes PDF resumes using the [Groq API](https://console.groq.com) (Llama 3.3 70B). Get an ATS compatibility score, keyword gap analysis, and actionable improvement suggestions in seconds — and optionally paste a job description to see how well your resume matches a specific role.
+A full-stack Next.js 14 application that analyzes PDF resumes using the [Groq API](https://console.groq.com) (GPT-OSS 120B). Get an ATS compatibility score, keyword gap analysis, and actionable improvement suggestions in seconds — and optionally paste a job description to see how well your resume matches a specific role.
 
 ---
 
@@ -24,7 +24,7 @@ A full-stack Next.js 14 application that analyzes PDF resumes using the [Groq AP
 | Framework | Next.js 14 (App Router) |
 | Styling | Tailwind CSS |
 | PDF Parsing | unpdf (pdf.js) |
-| AI Analysis | Groq API (`groq-sdk`, Llama 3.3 70B) |
+| AI Analysis | Groq API (`groq-sdk`, GPT-OSS 120B) |
 | Animations | CSS keyframes |
 | File Upload | react-dropzone |
 | Icons | lucide-react |
@@ -99,8 +99,8 @@ Open `.env.local` and add your Groq API key:
 
 ```env
 GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxx
-# Optional — defaults to llama-3.3-70b-versatile
-# GROQ_MODEL=llama-3.3-70b-versatile
+# Optional — defaults to openai/gpt-oss-120b
+# GROQ_MODEL=openai/gpt-oss-120b
 ```
 
 > **Important:** Never commit `.env.local` to version control. It's already in `.gitignore`.
@@ -198,8 +198,8 @@ Body: resume=<PDF file>, jobDescription=<optional text>
 ### Swap Groq model
 Set `GROQ_MODEL` in `.env.local` to any chat model from https://console.groq.com/docs/models, e.g.:
 ```env
-GROQ_MODEL=llama-3.3-70b-versatile   # Default — best quality
-GROQ_MODEL=llama-3.1-8b-instant      # Fastest, lighter analysis
+GROQ_MODEL=openai/gpt-oss-120b      # Default — best quality
+GROQ_MODEL=openai/gpt-oss-20b       # Faster, lighter analysis
 ```
 
 ### Adjust scoring weights

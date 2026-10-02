@@ -169,7 +169,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="font-display font-semibold text-ink text-sm">ResumeIQ</span>
           <p className="text-muted text-xs font-mono">
-            Powered by Groq · Llama 3.3 · Next.js 14
+            Powered by Groq · GPT-OSS 120B · Next.js 14
           </p>
         </div>
       </footer>

@@ -1,7 +1,7 @@
 import Groq from "groq-sdk";
 import { AnalysisResult, FeedbackItem, Improvement, JobMatch, Level, MAX_JD_CHARS, SectionScore } from "./types";
 
-export const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+export const DEFAULT_MODEL = "openai/gpt-oss-120b";
 
 // Keeps the prompt well inside Groq's free-tier tokens-per-minute limits.
 const MAX_RESUME_CHARS = 12000;
@@ -100,7 +100,8 @@ export async function analyzeResume(resumeText: string, jobDescription?: string)
         { role: "user", content: userContent },
       ],
       temperature: 0.3,
-      max_tokens: 4096,
+      // GPT-OSS is a reasoning model; its reasoning tokens count toward this limit.
+      max_tokens: 8192,
       response_format: { type: "json_object" },
     });
     content = response.choices[0]?.message?.content;
