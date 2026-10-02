@@ -1,24 +1,39 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection } from "react-dropzone";
 import { Upload, FileText, X, Loader2 } from "lucide-react";
 import clsx from "clsx";
 
 interface DropZoneProps {
   onUpload: (file: File) => void;
   isLoading: boolean;
+  submitLabel?: string;
+  // Rendered between the drop area and the submit button.
+  children?: React.ReactNode;
 }
 
-export default function DropZone({ onUpload, isLoading }: DropZoneProps) {
+export default function DropZone({
+  onUpload,
+  isLoading,
+  submitLabel = "Analyze My Resume →",
+  children,
+}: DropZoneProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragError, setDragError] = useState<string | null>(null);
 
   const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: unknown[]) => {
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setDragError(null);
-      if (rejectedFiles && (rejectedFiles as Array<unknown>).length > 0) {
-        setDragError("Only PDF files are supported.");
+      if (rejectedFiles.length > 0) {
+        const code = rejectedFiles[0].errors[0]?.code;
+        setDragError(
+          code === "file-too-large"
+            ? "File is larger than 10MB."
+            : code === "too-many-files"
+            ? "Please upload one file at a time."
+            : "Only PDF files are supported."
+        );
         return;
       }
       if (acceptedFiles[0]) {
@@ -32,6 +47,7 @@ export default function DropZone({ onUpload, isLoading }: DropZoneProps) {
     onDrop,
     accept: { "application/pdf": [".pdf"] },
     maxFiles: 1,
+    maxSize: 10 * 1024 * 1024,
     disabled: isLoading,
   });
 
@@ -60,7 +76,7 @@ export default function DropZone({ onUpload, isLoading }: DropZoneProps) {
           isDragActive
             ? "border-accent bg-accent/5 dropzone-active"
             : selectedFile
-            ? "border-success/50 bg-success/3"
+            ? "border-success/50 bg-success/[0.03]"
             : "border-border hover:border-ink/30 bg-cream/40 hover:bg-cream/70",
           isLoading && "pointer-events-none opacity-60"
         )}
@@ -128,13 +144,15 @@ export default function DropZone({ onUpload, isLoading }: DropZoneProps) {
         <p className="text-danger text-sm text-center font-medium">{dragError}</p>
       )}
 
+      {children}
+
       {selectedFile && !isLoading && (
         <button
           onClick={handleSubmit}
           className="w-full py-4 rounded-xl font-display font-semibold text-base tracking-wide transition-all duration-200
             bg-ink text-accent hover:bg-ink/85 active:scale-[0.98] shadow-lg shadow-ink/10"
         >
-          Analyze My Resume →
+          {submitLabel}
         </button>
       )}
 

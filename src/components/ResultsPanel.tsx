@@ -3,6 +3,7 @@
 import { AnalysisResult } from "@/lib/types";
 import ScoreRing from "./ScoreRing";
 import SectionScores from "./SectionScores";
+import JobMatchCard from "./JobMatchCard";
 import {
   CheckCircle2,
   AlertCircle,
@@ -21,8 +22,8 @@ interface ResultsPanelProps {
 }
 
 const impactConfig = {
-  high: { label: "High Impact", color: "text-danger", bg: "bg-danger/8", icon: AlertCircle },
-  medium: { label: "Medium", color: "text-warning", bg: "bg-warning/8", icon: AlertTriangle },
+  high: { label: "High Impact", color: "text-danger", bg: "bg-danger/[0.08]", icon: AlertCircle },
+  medium: { label: "Medium", color: "text-warning", bg: "bg-warning/[0.08]", icon: AlertTriangle },
   low: { label: "Low", color: "text-muted", bg: "bg-ink/5", icon: AlertCircle },
 };
 
@@ -50,6 +51,8 @@ export default function ResultsPanel({ result, onReset }: ResultsPanelProps) {
           New scan
         </button>
       </div>
+
+      {result.jobMatch && <JobMatchCard match={result.jobMatch} />}
 
       {/* Score + Summary */}
       <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6">
@@ -81,7 +84,7 @@ export default function ResultsPanel({ result, onReset }: ResultsPanelProps) {
         <div className="bg-success/5 border border-success/20 rounded-2xl p-5 animate-slide-up stagger-2">
           <div className="flex items-center gap-2 mb-4">
             <CheckCircle2 className="w-4 h-4 text-success" />
-            <h3 className="font-display font-semibold text-success">What's Working Well</h3>
+            <h3 className="font-display font-semibold text-success">What&apos;s Working Well</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {result.strengths.map((s, i) => (
@@ -107,7 +110,7 @@ export default function ResultsPanel({ result, onReset }: ResultsPanelProps) {
           </div>
           <div className="space-y-3">
             {result.feedback.map((f, i) => {
-              const config = impactConfig[f.impact];
+              const config = impactConfig[f.impact] ?? impactConfig.medium;
               const Icon = config.icon;
               return (
                 <div key={i} className={clsx("rounded-xl p-3.5", config.bg)}>
@@ -141,14 +144,16 @@ export default function ResultsPanel({ result, onReset }: ResultsPanelProps) {
             </span>
           </div>
           <p className="text-xs text-muted mb-3">
-            Add these ATS-critical terms to increase your score:
+            {result.jobMatch
+              ? "Terms from the job description your resume doesn't include:"
+              : "Add these ATS-critical terms to increase your score:"}
           </p>
           <div className="flex flex-wrap gap-2">
             {result.missingKeywords.map((kw, i) => (
               <span
                 key={i}
                 className="px-3 py-1.5 bg-ink/5 hover:bg-ink/10 text-ink text-sm font-mono rounded-lg 
-                  border border-ink/8 cursor-default transition-colors"
+                  border border-ink/[0.08] cursor-default transition-colors"
               >
                 + {kw}
               </span>
@@ -165,7 +170,7 @@ export default function ResultsPanel({ result, onReset }: ResultsPanelProps) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {result.improvements.map((imp, i) => {
-            const p = priorityConfig[imp.priority];
+            const p = priorityConfig[imp.priority] ?? priorityConfig.medium;
             return (
               <div
                 key={i}

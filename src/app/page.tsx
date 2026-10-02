@@ -4,6 +4,7 @@ import { useState } from "react";
 import DropZone from "@/components/DropZone";
 import ResultsPanel from "@/components/ResultsPanel";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import JobDescriptionInput from "@/components/JobDescriptionInput";
 import { AnalysisResult } from "@/lib/types";
 import { FileText, Zap, ShieldCheck, Target } from "lucide-react";
 
@@ -11,7 +12,7 @@ type State = "idle" | "loading" | "results" | "error";
 
 const FEATURES = [
   { icon: Target, label: "ATS Score", desc: "0–100 compatibility rating" },
-  { icon: ShieldCheck, label: "Gap Analysis", desc: "Missing keywords detected" },
+  { icon: ShieldCheck, label: "JD Match", desc: "Fit score for any job posting" },
   { icon: Zap, label: "AI Feedback", desc: "Section-by-section review" },
   { icon: FileText, label: "Roadmap", desc: "Prioritized improvements" },
 ];
@@ -20,6 +21,8 @@ export default function Home() {
   const [state, setState] = useState<State>("idle");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [jobDescription, setJobDescription] = useState("");
+  const hasJd = jobDescription.trim().length > 0;
 
   const handleUpload = async (file: File) => {
     setState("loading");
@@ -28,16 +31,18 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("resume", file);
+      if (hasJd) formData.append("jobDescription", jobDescription.trim());
 
       const res = await fetch("/api/analyze", {
         method: "POST",
         body: formData,
       });
 
-      const json = await res.json();
+      // A timeout or crash can return HTML instead of JSON.
+      const json = await res.json().catch(() => null);
 
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Analysis failed");
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || `Analysis failed (HTTP ${res.status}). Please try again.`);
       }
 
       setResult(json.data);
@@ -108,7 +113,8 @@ export default function Home() {
 
             <p className="text-muted text-lg max-w-xl mx-auto leading-relaxed mb-12">
               Upload your PDF resume and get an instant AI analysis — ATS score,
-              missing keywords, and a step-by-step improvement plan.
+              missing keywords, and a step-by-step improvement plan. Add a job
+              description to see how well you match the role.
             </p>
 
             {/* Feature pills */}
@@ -130,12 +136,18 @@ export default function Home() {
             </div>
 
             {error && (
-              <div className="max-w-md mx-auto mb-8 px-4 py-3 bg-danger/8 border border-danger/20 rounded-xl text-danger text-sm font-medium">
+              <div className="max-w-md mx-auto mb-8 px-4 py-3 bg-danger/[0.08] border border-danger/20 rounded-xl text-danger text-sm font-medium">
                 ⚠ {error}
               </div>
             )}
 
-            <DropZone onUpload={handleUpload} isLoading={false} />
+            <DropZone
+              onUpload={handleUpload}
+              isLoading={false}
+              submitLabel={hasJd ? "Analyze & Match to Job →" : "Analyze My Resume →"}
+            >
+              <JobDescriptionInput value={jobDescription} onChange={setJobDescription} />
+            </DropZone>
           </div>
         )}
 
@@ -157,7 +169,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="font-display font-semibold text-ink text-sm">ResumeIQ</span>
           <p className="text-muted text-xs font-mono">
-            Powered by GPT-4o · pdf-parse · Next.js 14
+            Powered by Groq · Llama 3.3 · Next.js 14
           </p>
         </div>
       </footer>
